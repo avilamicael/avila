@@ -304,8 +304,16 @@ class PayablePayment(TenantAwareModel):
     )
     notes = models.TextField('Observações', blank=True)
 
-    # Informações bancárias
-    bank_account = models.CharField('Conta Bancária', max_length=100, blank=True)
+    # Filial que efetivamente pagou a conta
+    paid_by_branch = models.ForeignKey(
+        Filial,
+        on_delete=models.PROTECT,
+        verbose_name='Pago pela Filial',
+        related_name='payments_made',
+        null=True,
+        blank=True,
+        help_text='Filial que efetivamente realizou o pagamento'
+    )
     transaction_number = models.CharField('Número da Transação', max_length=100, blank=True)
 
     # Anexos (comprovantes de pagamento)

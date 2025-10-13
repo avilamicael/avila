@@ -298,6 +298,7 @@ class PayablePaymentSerializer(serializers.ModelSerializer):
         write_only=True,
         required=False
     )
+    paid_by_branch_detail = FilialListSerializer(source='paid_by_branch', read_only=True)
 
     class Meta:
         model = PayablePayment
@@ -308,7 +309,8 @@ class PayablePaymentSerializer(serializers.ModelSerializer):
             'amount',
             'payment_method',
             'notes',
-            'bank_account',
+            'paid_by_branch',
+            'paid_by_branch_detail',
             'transaction_number',
             'attachments',
             'attachment_files',

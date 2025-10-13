@@ -214,7 +214,7 @@ class PayablePaymentViewSet(viewsets.ModelViewSet):
         """Retorna apenas pagamentos do tenant do usuário"""
         return PayablePayment.objects.filter(
             tenant=self.request.tenant
-        ).select_related('account_payable', 'payment_method')
+        ).select_related('account_payable', 'payment_method', 'paid_by_branch')
 
     def perform_destroy(self, instance):
         """

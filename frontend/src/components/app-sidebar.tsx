@@ -2,11 +2,10 @@
 
 import * as React from "react"
 import {
-  BookOpen,
   Bot,
   Building2,
   Settings2,
-  SquareTerminal,
+  CircleDollarSign,
 } from "lucide-react"
 import { NavMain } from "@/components/nav-main"
 import { NavUser } from "@/components/nav-user"
@@ -23,11 +22,9 @@ import { useAuth } from "@/hooks/useAuth"
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const { user } = useAuth()
-  console.log(user?.avatar)
   const data = {
     user: {
       name: user?.full_name || "Usúario",
-      email: user?.email || "contato@avila.com.br",
       avatar: user?.avatar,
     },
 
@@ -35,11 +32,11 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       {
         title: "Financeiro",
         url: "#",
-        icon: SquareTerminal,
+        icon: CircleDollarSign,
         items: [
           {
             title: "Adicionar Conta",
-            url: "#",
+            url: "/payables/create",
           },
           {
             title: "Listar Contas",
@@ -97,6 +94,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                 </div>
                 <div className="grid flex-1 text-left text-sm leading-tight">
                   <span className="truncate font-medium">{user?.tenant_name || "AVILA SOLUÇÔES"}</span>
+                  <span className="truncate text-xs">{user?.email || "contato@avila.com.br"}</span>
                 </div>
               </a>
             </SidebarMenuButton>

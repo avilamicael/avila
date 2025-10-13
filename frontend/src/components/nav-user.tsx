@@ -4,7 +4,8 @@ import {
   LogOut,
   Settings2,
 } from "lucide-react"
-
+import { useAuth } from "@/hooks/useAuth";
+import { useNavigate } from "react-router-dom";
 import {
   Avatar,
   AvatarFallback,
@@ -15,7 +16,6 @@ import {
   DropdownMenuContent,
   DropdownMenuGroup,
   DropdownMenuItem,
-  DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
@@ -36,6 +36,13 @@ export function NavUser({
   }
 }) {
   const { isMobile } = useSidebar()
+  const { logout } = useAuth();
+  const navigate = useNavigate();
+
+  const handleLogout = async () => {
+    await logout();
+    navigate('/login');
+  }
 
   return (
     <SidebarMenu>
@@ -74,8 +81,8 @@ export function NavUser({
               </DropdownMenuItem>
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
-            <DropdownMenuItem>
-              <LogOut color="red" />
+            <DropdownMenuItem onClick={handleLogout}>
+              <LogOut color="red"/>
               <span className="text-red-600">Sair</span>
             </DropdownMenuItem>
           </DropdownMenuContent>

@@ -83,7 +83,7 @@ class PaymentMethod(UppercaseMixin, TenantAwareModel, SoftDeleteModel):
 class Filial(UppercaseMixin, TenantAwareModel, SoftDeleteModel):
     """Modelo para Filiais"""
 
-    uppercase_fields = ['name', 'notes']
+    uppercase_fields = ['name', 'notes', 'bank_account_name', 'bank_account_description']
 
     name = models.CharField('Nome', max_length=100)
     cnpj = models.CharField(
@@ -93,6 +93,19 @@ class Filial(UppercaseMixin, TenantAwareModel, SoftDeleteModel):
         help_text="CNPJ da filial"
     )
     notes = models.TextField('Observações', blank=True)
+
+    # Dados da conta bancária (opcional)
+    bank_account_name = models.CharField(
+        'Nome da Conta Bancária',
+        max_length=200,
+        blank=True,
+        help_text='Ex: Banco do Brasil - Conta Corrente'
+    )
+    bank_account_description = models.TextField(
+        'Descrição da Conta Bancária',
+        blank=True,
+        help_text='Informações adicionais sobre a conta bancária'
+    )
 
     class Meta:
         verbose_name = 'Filial'

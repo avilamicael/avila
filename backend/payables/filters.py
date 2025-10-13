@@ -161,6 +161,8 @@ class PayablePaymentFilter(django_filters.FilterSet):
     """
     account_payable = django_filters.NumberFilter(field_name='account_payable__id')
     payment_method = django_filters.NumberFilter(field_name='payment_method__id')
+    paid_by_branch = django_filters.NumberFilter(field_name='paid_by_branch__id')
+    paid_by_branch__in = django_filters.BaseInFilter(field_name='paid_by_branch__id', lookup_expr='in')
 
     # Filtros de data
     payment_date = django_filters.DateFilter(field_name='payment_date')
@@ -178,14 +180,15 @@ class PayablePaymentFilter(django_filters.FilterSet):
 
     class Meta:
         model = AccountPayable
-        fields = ['account_payable', 'payment_method']
+        fields = ['account_payable', 'payment_method', 'paid_by_branch']
 
     def filter_search(self, queryset, name, value):
-        """Busca em notas, número de transação e descrição da conta"""
+        """Busca em notas, número de transação, descrição da conta e nome da filial"""
         if value:
             return queryset.filter(
                 Q(notes__icontains=value) |
                 Q(transaction_number__icontains=value) |
-                Q(account_payable__description__icontains=value)
+                Q(account_payable__description__icontains=value) |
+                Q(paid_by_branch__name__icontains=value)
             )
         return queryset

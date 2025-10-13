@@ -36,7 +36,8 @@ class FilialViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         """Retorna apenas filiais do tenant do usuário"""
-        return Filial.objects.filter(tenant=self.request.tenant)
+        queryset = Filial.objects.filter(tenant=self.request.tenant)
+        return queryset
 
     def perform_create(self, serializer):
         """Associa o tenant ao criar"""
@@ -143,7 +144,7 @@ class PaymentMethodViewSet(viewsets.ModelViewSet):
     """
     serializer_class = PaymentMethodSerializer
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
-    filterset_fields = ['is_active', 'requires_authorization']
+    filterset_fields = ['is_active']
     search_fields = ['name', 'description']
     ordering_fields = ['name', 'created_at']
     ordering = ['name']

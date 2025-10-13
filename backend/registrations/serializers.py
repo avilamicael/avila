@@ -11,10 +11,9 @@ class FilialSerializer(serializers.ModelSerializer):
             'id',
             'name',
             'cnpj',
-            'email',
-            'phone',
-            'address',
             'notes',
+            'bank_account_name',
+            'bank_account_description',
             'is_active',
             'created_at',
             'updated_at',
@@ -118,7 +117,6 @@ class PaymentMethodSerializer(serializers.ModelSerializer):
             'id',
             'name',
             'description',
-            'requires_authorization',
             'is_active',
             'created_at',
             'updated_at',
@@ -145,7 +143,7 @@ class FilialListSerializer(serializers.ModelSerializer):
     """Serializer simples para listagem em dropdowns"""
     class Meta:
         model = Filial
-        fields = ['id', 'name', 'cnpj']
+        fields = ['id', 'name', 'cnpj', 'bank_account_name', 'bank_account_description']
 
 
 class SupplierListSerializer(serializers.ModelSerializer):
@@ -166,4 +164,4 @@ class PaymentMethodListSerializer(serializers.ModelSerializer):
     """Serializer simples para listagem em dropdowns"""
     class Meta:
         model = PaymentMethod
-        fields = ['id', 'name', 'requires_authorization']
+        fields = ['id', 'name']
