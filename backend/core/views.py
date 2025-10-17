@@ -16,6 +16,7 @@ def protected_media(request, path):
     """
     Serve arquivos de media apenas para usuários autenticados
     """
+
     # Constrói o caminho completo do arquivo
     file_path = os.path.join(settings.MEDIA_ROOT, path)
 

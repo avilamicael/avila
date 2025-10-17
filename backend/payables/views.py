@@ -15,6 +15,7 @@ from .serializers import (
 )
 from .filters import AccountPayableFilter, PayablePaymentFilter
 from core.models import Attachment
+from core.pagination import LargeResultsSetPagination
 
 
 class AccountPayableViewSet(viewsets.ModelViewSet):
@@ -34,6 +35,7 @@ class AccountPayableViewSet(viewsets.ModelViewSet):
     - POST /api/accounts-payable/{id}/add_attachment/ - Adiciona anexo
     """
     parser_classes = (MultiPartParser, FormParser, JSONParser)
+    pagination_class = LargeResultsSetPagination  # Permite page_size customizado
     filter_backends = [DjangoFilterBackend, filters.OrderingFilter]
     filterset_class = AccountPayableFilter
     ordering_fields = ['due_date', 'created_at', 'original_amount', 'payment_date', 'paid_amount']

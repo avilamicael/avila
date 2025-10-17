@@ -80,7 +80,7 @@ ROOT_URLCONF = 'core.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [os.path.join(BASE_DIR, 'templates')],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -171,7 +171,9 @@ REST_FRAMEWORK = {
         'rest_framework.parsers.MultiPartParser',
     ],
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
-    'PAGE_SIZE': 50,
+    'PAGE_SIZE': 50,  # Tamanho padrão da página
+    'PAGE_SIZE_QUERY_PARAM': 'page_size',  # Permite ao cliente controlar o tamanho da página
+    'MAX_PAGE_SIZE': 2000,  # Limite máximo de registros por página
 }
 
 # ========================================

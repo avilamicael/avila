@@ -51,6 +51,8 @@ class AccountPayableListSerializer(serializers.ModelSerializer):
     supplier_name = serializers.CharField(source='supplier.name', read_only=True)
     category_name = serializers.CharField(source='category.name', read_only=True)
     category_color = serializers.CharField(source='category.color', read_only=True)
+    payment_method_name = serializers.CharField(source='payment_method.name', read_only=True)
+    total_amount = serializers.DecimalField(max_digits=12, decimal_places=2, read_only=True, source='final_amount')
     final_amount = serializers.DecimalField(max_digits=12, decimal_places=2, read_only=True)
     remaining_amount = serializers.DecimalField(max_digits=12, decimal_places=2, read_only=True)
     is_overdue = serializers.BooleanField(read_only=True)
@@ -69,7 +71,10 @@ class AccountPayableListSerializer(serializers.ModelSerializer):
             'category',
             'category_name',
             'category_color',
+            'payment_method',
+            'payment_method_name',
             'original_amount',
+            'total_amount',
             'final_amount',
             'paid_amount',
             'remaining_amount',
@@ -300,6 +305,22 @@ class PayablePaymentSerializer(serializers.ModelSerializer):
     )
     paid_by_branch_detail = FilialListSerializer(source='paid_by_branch', read_only=True)
 
+    # Campos extras para atualizar juros e multa da conta
+    interest = serializers.DecimalField(
+        max_digits=12,
+        decimal_places=2,
+        required=False,
+        write_only=True,
+        help_text="Juros a serem adicionados à conta"
+    )
+    fine = serializers.DecimalField(
+        max_digits=12,
+        decimal_places=2,
+        required=False,
+        write_only=True,
+        help_text="Multa a ser adicionada à conta"
+    )
+
     class Meta:
         model = PayablePayment
         fields = [
@@ -312,6 +333,8 @@ class PayablePaymentSerializer(serializers.ModelSerializer):
             'paid_by_branch',
             'paid_by_branch_detail',
             'transaction_number',
+            'interest',
+            'fine',
             'attachments',
             'attachment_files',
             'created_at',
@@ -319,24 +342,31 @@ class PayablePaymentSerializer(serializers.ModelSerializer):
         read_only_fields = ['id', 'created_at']
 
     def validate_amount(self, value):
-        """Valida que o valor do pagamento não excede o valor restante"""
-        account = self.initial_data.get('account_payable')
-        if account:
-            try:
-                account_obj = AccountPayable.objects.get(pk=account)
-                if value > account_obj.remaining_amount:
-                    raise serializers.ValidationError(
-                        f"Valor do pagamento (R$ {value}) não pode ser maior que o valor restante (R$ {account_obj.remaining_amount})"
-                    )
-            except AccountPayable.DoesNotExist:
-                pass
+        """Valida que o valor do pagamento é positivo"""
+        if value <= 0:
+            raise serializers.ValidationError("O valor do pagamento deve ser maior que zero")
         return value
 
     def create(self, validated_data):
-        """Cria pagamento e anexos"""
+        """Cria pagamento e anexos, atualiza juros/multa da conta se fornecidos"""
         attachment_files = validated_data.pop('attachment_files', [])
+        interest = validated_data.pop('interest', None)
+        fine = validated_data.pop('fine', None)
+
         validated_data['tenant'] = self.context['request'].tenant
 
+        # Se juros ou multa foram informados, atualizar a conta
+        account = validated_data['account_payable']
+        if interest is not None:
+            account.interest = interest
+        if fine is not None:
+            account.fine = fine
+
+        # Salvar a conta se houve mudanças
+        if interest is not None or fine is not None:
+            account.save()
+
+        # Criar pagamento
         payment = PayablePayment.objects.create(**validated_data)
 
         # Criar anexos

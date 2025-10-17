@@ -15,7 +15,7 @@ const breadcrumbConfig: Record<string, BreadcrumbItem[]> = {
     { label: "Financeiro" },
     { label: "Adicionar Conta" },
   ],
-  "/payables/list": [
+  "/payables/": [
     { label: "Inicio", href: "/" },
     { label: "Financeiro" },
     { label: "Listar Contas" },

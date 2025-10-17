@@ -170,7 +170,7 @@ export default function PayablesCreate() {
         category: selectedCategoriaId!,
         payment_method: selectedMetodoId!,
         description,
-        original_amount: parseCurrency(originalAmount),
+        original_amount: (Number(parseCurrency(originalAmount)) / 100).toFixed(2),
         issue_date: todayFormatted, // Data de hoje automaticamente
         due_date: parseDate(dueDate),
         invoice_numbers: invoiceNumbers || undefined,
@@ -186,7 +186,9 @@ export default function PayablesCreate() {
       toast.success("Conta cadastrada com sucesso!", {
         description: "A conta foi registrada no sistema."
       })
-      navigate("/payables")
+
+      // Limpa o formulário para permitir novo cadastro
+      handleReset()
     } catch (error: any) {
       console.error("Erro ao cadastrar conta:", error)
       const errorMessage = error.response?.data?.message

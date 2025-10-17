@@ -2,13 +2,19 @@ from django.contrib import admin, messages
 from django.utils.html import format_html
 from django.db.models import Sum
 from django.utils import timezone
+from django.urls import path
+from django.shortcuts import render, redirect
+from django.http import HttpResponseRedirect
 
 from core.admin import BaseAdmin
 from .models import AccountPayable, PayablePayment
+from .excel_import import export_template_excel, import_excel
 
 
 @admin.register(AccountPayable)
 class AccountPayableAdmin(BaseAdmin):
+    change_list_template = "admin/payables/accountpayable_changelist.html"
+
     list_display = [
         'description', 'supplier', 'category', 'branch',
         'status_colored', 'due_date', 'final_amount_display',
@@ -106,6 +112,64 @@ class AccountPayableAdmin(BaseAdmin):
         updated = queryset.update(status='cancelled')
         messages.warning(request, f'{updated} contas canceladas.')
     cancel_accounts.short_description = 'Cancelar Contas Selecionadas'
+
+    # === URLS PERSONALIZADAS PARA IMPORTAÇÃO/EXPORTAÇÃO ===
+    def get_urls(self):
+        urls = super().get_urls()
+        custom_urls = [
+            path('exportar-modelo/', self.admin_site.admin_view(self.exportar_modelo), name='payables_exportar_modelo'),
+            path('importar-excel/', self.admin_site.admin_view(self.importar_excel_view), name='payables_importar_excel'),
+        ]
+        return custom_urls + urls
+
+    def exportar_modelo(self, request):
+        """View para download da planilha modelo"""
+        return export_template_excel(request)
+
+    def importar_excel_view(self, request):
+        """View para importação do Excel"""
+        if request.method == 'POST' and request.FILES.get('excel_file'):
+            excel_file = request.FILES['excel_file']
+
+            # Valida extensão
+            if not excel_file.name.endswith(('.xlsx', '.xls')):
+                messages.error(request, 'Por favor, envie um arquivo Excel (.xlsx ou .xls)')
+                return redirect('..')
+
+            # Obtém o tenant do usuário logado
+            if not hasattr(request.user, 'tenant'):
+                messages.error(request, 'Usuário sem tenant associado. Entre em contato com o administrador.')
+                return redirect('..')
+
+            tenant = request.user.tenant
+
+            # Processa importação
+            resultado = import_excel(request, excel_file, tenant)
+
+            # Exibe mensagens
+            if resultado['sucesso'] > 0:
+                messages.success(request, f"{resultado['sucesso']} contas importadas com sucesso!")
+
+            for aviso in resultado['avisos']:
+                messages.warning(request, aviso)
+
+            for erro in resultado['erros']:
+                messages.error(request, erro)
+
+            # Mostra resumo de criações
+            if resultado['criados']['filiais']:
+                messages.info(request, f"Filiais criadas: {', '.join(resultado['criados']['filiais'])}")
+            if resultado['criados']['fornecedores']:
+                messages.info(request, f"Fornecedores criados: {', '.join(resultado['criados']['fornecedores'])}")
+            if resultado['criados']['categorias']:
+                messages.info(request, f"Categorias criadas: {', '.join(resultado['criados']['categorias'])}")
+            if resultado['criados']['metodos_pagamento']:
+                messages.info(request, f"Métodos de pagamento criados: {', '.join(resultado['criados']['metodos_pagamento'])}")
+
+            return redirect('..')
+
+        # Se não for POST, redireciona
+        return redirect('..')
 
 
 @admin.register(PayablePayment)

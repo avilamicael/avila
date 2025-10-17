@@ -228,9 +228,11 @@ export interface PayablePayment {
 export interface PayablePaymentCreate {
   account_payable: number;
   payment_date: string;
-  amount_paid: string | number;
+  amount: string | number; // Backend espera 'amount', não 'amount_paid'
   payment_method: number;
   paid_by_branch?: number;
+  interest?: number; // Juros a serem adicionados à conta
+  fine?: number; // Multa a ser adicionada à conta
   transaction_number?: string;
   notes?: string;
 }

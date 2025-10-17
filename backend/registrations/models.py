@@ -12,8 +12,10 @@ class Supplier(UppercaseMixin, TenantAwareModel, SoftDeleteModel):
     cnpj = models.CharField(
         'CNPJ',
         max_length=18,
+        blank=True,
+        null=True,
         validators=[MinLengthValidator(14)],
-        help_text="CNPJ do fornecedor"
+        help_text="CNPJ do fornecedor (opcional)"
     )
     email = models.EmailField('E-mail', blank=True)
     phone = models.CharField('Telefone', max_length=20, blank=True)
@@ -24,11 +26,17 @@ class Supplier(UppercaseMixin, TenantAwareModel, SoftDeleteModel):
         verbose_name = 'Fornecedor'
         verbose_name_plural = 'Fornecedores'
         ordering = ['name']
-        unique_together = [['tenant', 'cnpj']]
         indexes = [
             models.Index(fields=['tenant', 'name']),
             models.Index(fields=['tenant', 'cnpj']),
             models.Index(fields=['tenant', 'is_active']),
+        ]
+        constraints = [
+            models.UniqueConstraint(
+                fields=['tenant', 'cnpj'],
+                condition=models.Q(cnpj__isnull=False) & ~models.Q(cnpj=''),
+                name='unique_supplier_cnpj_per_tenant'
+            )
         ]
 
     def __str__(self):
@@ -89,8 +97,10 @@ class Filial(UppercaseMixin, TenantAwareModel, SoftDeleteModel):
     cnpj = models.CharField(
         'CNPJ',
         max_length=18,
+        blank=True,
+        null=True,
         validators=[MinLengthValidator(14)],
-        help_text="CNPJ da filial"
+        help_text="CNPJ da filial (opcional)"
     )
     notes = models.TextField('Observações', blank=True)
 
@@ -111,11 +121,17 @@ class Filial(UppercaseMixin, TenantAwareModel, SoftDeleteModel):
         verbose_name = 'Filial'
         verbose_name_plural = 'Filiais'
         ordering = ['name']
-        unique_together = [['tenant', 'cnpj']]
         indexes = [
             models.Index(fields=['tenant', 'name']),
             models.Index(fields=['tenant', 'cnpj']),
             models.Index(fields=['tenant', 'is_active']),
+        ]
+        constraints = [
+            models.UniqueConstraint(
+                fields=['tenant', 'cnpj'],
+                condition=models.Q(cnpj__isnull=False) & ~models.Q(cnpj=''),
+                name='unique_filial_cnpj_per_tenant'
+            )
         ]
 
     def __str__(self):
